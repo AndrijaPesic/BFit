@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "293724744517",
+    "firebase_url": "https://bfitmaster.firebaseio.com",
+    "project_id": "bfitmaster",
+    "storage_bucket": "bfitmaster.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:293724744517:android:41d6e4f529896c2a",
+        "android_client_info": {
+          "package_name": "rs.elfak.mosis.akitoske.bfit"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "293724744517-7ngl1b6ni61l6i0jlprbnpgble03n1r8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "rs.elfak.mosis.akitoske.bfit",
+            "certificate_hash": "9e944b362bde5ffb0166d920279a50b0d4bbb0cd"
+          }
+        },
+        {
+          "client_id": "293724744517-ud73qv6b9hsofirtr90mqm7dem9lt2ii.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAlNDQm2X3hFm--F_1S4gRWa4ptAjVrdLw"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "293724744517-ud73qv6b9hsofirtr90mqm7dem9lt2ii.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

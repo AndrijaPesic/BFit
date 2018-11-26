@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 public class SplashActivity extends AppCompatActivity {
 
     @Override
@@ -11,12 +13,13 @@ public class SplashActivity extends AppCompatActivity {
         setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
 
-        routeToAppropriatePage();
-        finish();
-    }
+        boolean loggedIn = FirebaseAuth.getInstance().getCurrentUser() != null;
 
-    private void routeToAppropriatePage(){
-        Intent mainActivity = new Intent(this, MainActivity.class);
-        startActivity(mainActivity);
+        if (!loggedIn) {
+            startActivity(new Intent(this, LoginActivity.class));
+        } else {
+            startActivity(new Intent(this, MainActivity.class));
+        }
+        finish();
     }
 }
