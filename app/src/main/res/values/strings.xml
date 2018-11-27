@@ -1,3 +1,49 @@
 <resources>
     <string name="app_name">BFit</string>
+
+    <!-- Shared among Register and Login activities -->
+    <string name="email_hint">Email</string>
+    <string name="password_hint">Password</string>
+    <string name="repeat_password_hint">Repeat password</string>
+
+    <string name="required_field_error">Required field.</string>
+    <string name="email_bad_format_error">Invalid email format.</string>
+    <string name="password_bad_format_error">Minimum 8 alphanumeric characters. At least one letter and one number.</string>
+
+    <!-- LoginActivity-->
+    <string name="login_title">Login</string>
+    <string name="login_button">Login</string>
+    <string name="login_no_account_button"><u>Create account</u></string>
+
+    <string name="login_progress_dialog_message">Logging in…</string>
+
+    <string name="login_email_not_exist_error">A user with that email does not exist.</string>
+    <string name="login_wrong_password_error">Incorrect password.</string>
+
+    <!-- RegisterActivity -->
+    <string name="register_title">Register</string>
+    <string name="register_button">Register</string>
+    <string name="register_email_exists_error">This email is already in use by another account.</string>
+    <string name="register_repeat_password_error">Must be same as password.</string>
+    <string name="register_display_name_format_error">Must contain from 2 to 12 alphanumeric characters and begin with a letter.</string>
+    <string name="register_full_name_format_error">Must contain from 2 to 30 characters. Letters and spaces allowed.</string>
+    <string name="register_phone_format_error">Must contain 9 to 12 digits, optionally preceded with a "+".</string>
+    <string name="register_avatar_error">Must choose an image.</string>
+
+    <string name="register_progress_dialog_message">Registering…</string>
+    <string name="register_failed_message">Unable to register at the moment.</string>
+
+    <string name="register_storage_permission_title">Storage access required</string>
+    <string name="register_storage_permission_message">The application requires access to read external storage
+    in order to load an image from gallery. If you deny the permission, you can still add an avatar using your
+        Camera application.</string>
+    <string name="register_storage_permission_message_no_ask">In order to choose an image from gallery, the
+        application requires access to read storage. Please either enable the storage permission or take a
+        picture using the Camera application.</string>
+
+    <string name="display_name_hint">Display name</string>
+    <string name="full_name_hint">Full name</string>
+    <string name="phone_number_hint">Phone number</string>
+    <string name="avatar_choose_button">Choose</string>
+
 </resources>

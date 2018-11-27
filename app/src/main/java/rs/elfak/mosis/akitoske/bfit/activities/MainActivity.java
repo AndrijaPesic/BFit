@@ -1,7 +1,9 @@
-package rs.elfak.mosis.akitoske.bfit;
+package rs.elfak.mosis.akitoske.bfit.activities;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+
+import rs.elfak.mosis.akitoske.bfit.R;
 
 public class MainActivity extends AppCompatActivity {
 
