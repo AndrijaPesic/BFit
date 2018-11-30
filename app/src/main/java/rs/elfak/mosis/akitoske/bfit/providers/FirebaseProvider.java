@@ -2,6 +2,7 @@ package rs.elfak.mosis.akitoske.bfit.providers;
 
 import android.net.Uri;
 
+import com.google.android.gms.auth.api.signin.internal.Storage;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -24,7 +25,6 @@ public class FirebaseProvider {
     // Firebase Realtime Database references
     private DatabaseReference mDbRef = FirebaseDatabase.getInstance().getReference();
     private DatabaseReference mUsersDbRef = mDbRef.child("users");
-    private DatabaseReference mStructuresDbRef = mDbRef.child("structures");
 
     // Firebase Storage references
     private StorageReference mAvatarsStorageRef = FirebaseStorage.getInstance().getReference().child("avatars");
@@ -36,16 +36,38 @@ public class FirebaseProvider {
         return mInstance;
     }
 
+    private FirebaseProvider() {
+        // private constructor required for singleton
+    }
+
+    public FirebaseAuth getAuthInstance() {
+        return mAuth;
+    }
+
+    // *********************************************** USERS *********************************************** //
+
     public FirebaseUser getCurrentFirebaseUser() {
         return mAuth.getCurrentUser();
+    }
+
+    public DatabaseReference getAllUsers() {
+        return mUsersDbRef;
+    }
+
+    public DatabaseReference getUserById(String userId) {
+        return mUsersDbRef.child(userId);
+    }
+
+    public DatabaseReference getCurrentUser() {
+        return mUsersDbRef.child(mAuth.getCurrentUser().getUid());
     }
 
     public Task<AuthResult> createUserWithEmailAndPassword(String email, String password) {
         return mAuth.createUserWithEmailAndPassword(email, password);
     }
 
-    public UploadTask uploadAvatarImage(String fileName, String localImgUri) {
-        return mAvatarsStorageRef.child(fileName).putFile(Uri.fromFile(new File(localImgUri)));
+    public StorageReference uploadAvatarImage(String fileName) {
+        return mAvatarsStorageRef.child(fileName);
     }
 
     public Task<Void> updateUserInfo(String userId, Map<String, Object> newUserValues) {

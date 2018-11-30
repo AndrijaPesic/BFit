@@ -27,6 +27,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -34,6 +35,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
@@ -334,61 +337,67 @@ public class RegisterActivity extends AppCompatActivity implements View.OnFocusC
 
         // First we create the user using FirebaseAuth so he/she's authenticated
         firebaseProvider.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        // Then we store the avatar in Storage and get its downloadUrl
-                        // from the snapshot, and save all user data in realtime database
-                        if (task.isSuccessful()) {
-                            String imageFileName = getAvatarFileName();
-                            String localImageUri = mNewAvatarLocalPath;
-                            firebaseProvider.uploadAvatarImage(imageFileName, localImageUri)
-                                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                                        @Override
-                                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                            String newUserId = firebaseProvider.getCurrentFirebaseUser().getUid();
-                                            Task<Uri> urlTask = taskSnapshot.getStorage().getDownloadUrl();
-                                            Uri downloadUrl = urlTask.getResult();
-                                            String storageImageUri = String.valueOf(downloadUrl);
-                                            UserModel newUser = getUserModel(newUserId, storageImageUri);
-                                            Map<String, Object> userInfoValues = newUser.toMap();
-                                            firebaseProvider.updateUserInfo(newUserId, userInfoValues);
-
-                                            progressDialog.dismiss();
-                                            Intent profileIntent = new Intent(RegisterActivity.this,
-                                                    MainActivity.class);
-                                            startActivity(profileIntent);
-                                            finish();
-                                        }
-                                    })
-                                    .addOnFailureListener(new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull Exception e) {
-                                            progressDialog.dismiss();
-                                            Toast.makeText(RegisterActivity.this, getString(R.string
-                                                    .register_failed_message), Toast.LENGTH_LONG).show();
-                                        }
-                                    });
-
-                        } else {
-                            progressDialog.dismiss();
-                            try {
-                                throw task.getException();
-                            } catch (FirebaseAuthInvalidCredentialsException e) {
-                                mEmail.setError(getString(R.string.email_bad_format_error));
-                                mEmail.requestFocus();
-                            } catch (FirebaseAuthUserCollisionException e) {
-                                mEmail.setError(getString(R.string.register_email_exists_error));
-                                mEmail.requestFocus();
-                            } catch (Exception e) {
-                                Toast.makeText(RegisterActivity.this, "Exception: " + e.getMessage(),
-                                        Toast.LENGTH_LONG).show();
+            .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
+                    // Then we store the avatar in Storage and get its downloadUrl
+                    // from the snapshot, and save all user data in realtime database
+                    if (task.isSuccessful()) {
+                        final String imageFileName = getAvatarFileName();
+                        String localImageUri = mNewAvatarLocalPath;
+                        firebaseProvider.uploadAvatarImage(imageFileName).putFile(Uri.fromFile(new File(localImageUri))).continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                            @Override
+                            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                                if (!task.isSuccessful()) {
+                                    throw task.getException();
+                                }
+                                return firebaseProvider.uploadAvatarImage(imageFileName).getDownloadUrl();
                             }
+                        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Uri> task) {
+                                if (task.isSuccessful()) {
+                                    Uri taskResult = task.getResult();
+                                    String newUserId = firebaseProvider.getCurrentFirebaseUser().getUid();
+                                    Uri downloadUrl = taskResult;
+                                    String storageImageUri = String.valueOf(downloadUrl);
+                                    UserModel newUser = getUserModel(newUserId, storageImageUri);
+                                    Map<String, Object> userInfoValues = newUser.toMap();
+                                    firebaseProvider.updateUserInfo(newUserId, userInfoValues);
+
+                                    progressDialog.dismiss();
+                                    Intent profileIntent = new Intent(RegisterActivity.this,
+                                            MainActivity.class);
+                                    startActivity(profileIntent);
+                                    finish();
+                                } else {
+                                    try {
+                                        throw task.getException();
+                                    } catch (Exception e) {
+                                        Toast.makeText(RegisterActivity.this, "Exception: " + e.getMessage(),
+                                                Toast.LENGTH_LONG).show();
+                                    }
+                                }
+                            }
+                        });
+                    } else {
+                        progressDialog.dismiss();
+                        try {
+                            throw task.getException();
+                        } catch (FirebaseAuthInvalidCredentialsException e) {
+                            mEmail.setError(getString(R.string.email_bad_format_error));
+                            mEmail.requestFocus();
+                        } catch (FirebaseAuthUserCollisionException e) {
+                            mEmail.setError(getString(R.string.register_email_exists_error));
+                            mEmail.requestFocus();
+                        } catch (Exception e) {
+                            Toast.makeText(RegisterActivity.this, "Exception: " + e.getMessage(),
+                                    Toast.LENGTH_LONG).show();
                         }
                     }
-                });
-
+                }});
     }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
