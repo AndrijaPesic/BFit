@@ -3,4 +3,44 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <group
+        android:id="@+id/main_menu_group"
+        android:orderInCategory="2">
+
+        <item
+            android:id="@+id/action_friends_item"
+            app:showAsAction="ifRoom"
+            android:title="@string/action_bar_friends"
+            android:icon="@drawable/ic_group_24dp"/>
+
+        <item
+            android:id="@+id/action_bar_profile_item"
+            app:showAsAction="never"
+            android:title="@string/action_bar_profile"/>
+
+        <item
+            android:id="@+id/action_bar_leaderboard_item"
+            app:showAsAction="never"
+            android:title="@string/action_bar_leaderboard"/>
+
+        <item
+            android:id="@+id/action_bar_settings_item"
+            app:showAsAction="never"
+            android:title="@string/action_bar_settings"/>
+
+        <item
+            android:id="@+id/action_bar_about_item"
+            app:showAsAction="never"
+            android:title="@string/action_bar_about"/>
+
+    </group>
+
+    <item
+        android:id="@+id/action_bar_logout_item"
+        app:showAsAction="never"
+        android:title="@string/action_bar_logout"
+        android:orderInCategory="3"/>
+
+
 </menu>
+
