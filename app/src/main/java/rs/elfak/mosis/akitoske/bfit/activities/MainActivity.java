@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.action_bar_logout_item:
                 FirebaseProvider.getInstance().getAuthInstance().signOut();
-                Intent logoutIntent = new Intent(MainActivity.this, LauncherActivity.class);
+                Intent logoutIntent = new Intent(MainActivity.this, SplashActivity.class);
                 startActivity(logoutIntent);
                 finish();
                 return true;
