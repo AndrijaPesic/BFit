@@ -1,0 +1,47 @@
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:padding="40dp"
+    tools:context=".fragments.NoLocationFragment">
+
+    <ImageView
+        android:id="@+id/no_location_icon_img"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/no_location_icon_size"
+        android:tint="@color/colorPrimaryDark"
+        app:srcCompat="@drawable/ic_location_off_24dp"/>
+
+    <TextView
+        android:id="@+id/no_location_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/no_location_vertical_margin"
+        android:layout_below="@id/no_location_icon_img"
+        android:textAlignment="center"
+        android:textSize="20sp"
+        android:text="@string/no_location_title"/>
+
+    <TextView
+        android:id="@+id/no_location_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/no_location_vertical_margin"
+        android:layout_below="@+id/no_location_title"
+        android:textAlignment="center"
+        android:textSize="16sp"
+        android:text="@string/no_location_message"/>
+
+    <Button
+        android:id="@+id/no_location_continue_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/no_location_vertical_margin"
+        android:layout_below="@+id/no_location_text"
+        android:text="@string/no_location_button_continue"
+        android:theme="@style/PrimaryButton"/>
+
+</RelativeLayout>

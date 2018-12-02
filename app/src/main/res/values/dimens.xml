@@ -11,4 +11,8 @@
     <dimen name="profile_display_name_vertical_margin">24dp</dimen>
     <dimen name="profile_display_name_text_size">32sp</dimen>
     <dimen name="profile_avatar_size">200dp</dimen>
+    
+    <dimen name="no_location_icon_size">100dp</dimen>
+    <dimen name="no_location_vertical_margin">40dp</dimen>
+
 </resources>
