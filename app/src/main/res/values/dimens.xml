@@ -5,4 +5,8 @@
     <dimen name="login_field_top_margin">8dp</dimen>
 
     <dimen name="edit_info_avatar_size">100dp</dimen>
+
+    <dimen name="no_location_icon_size">100dp</dimen>
+    <dimen name="no_location_vertical_margin">40dp</dimen>
+
 </resources>
