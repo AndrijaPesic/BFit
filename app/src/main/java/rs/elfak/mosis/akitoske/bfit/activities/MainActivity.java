@@ -36,6 +36,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.action_bar_profile_item:
+                Intent i = new Intent(MainActivity.this,ProfileActivity.class);
+                startActivity(i);
+                return true;
             case R.id.action_bar_logout_item:
                 FirebaseProvider.getInstance().getAuthInstance().signOut();
                 Intent logoutIntent = new Intent(MainActivity.this, SplashActivity.class);

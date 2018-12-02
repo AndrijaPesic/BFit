@@ -36,6 +36,11 @@
         </activity>
 
         <activity
+            android:name=".activities.ProfileActivity"
+            android:label="@string/action_bar_profile"
+            android:theme="@style/AppTheme" />
+
+        <activity
             android:name=".activities.LoginActivity"
             android:label="@string/login_title"
             android:theme="@style/AppTheme.NoActionBar" />
@@ -45,6 +50,8 @@
             android:label="@string/register_title"
             android:parentActivityName=".activities.LoginActivity"
             android:theme="@style/AppTheme.NoActionBar">
+
+
 
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

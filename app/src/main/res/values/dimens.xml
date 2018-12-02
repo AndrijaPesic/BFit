@@ -5,4 +5,10 @@
     <dimen name="login_field_top_margin">8dp</dimen>
 
     <dimen name="edit_info_avatar_size">100dp</dimen>
+
+    <dimen name="profile_banner_background_height">200dp</dimen>
+    <dimen name="profile_display_name_horizontal_margin">24dp</dimen>
+    <dimen name="profile_display_name_vertical_margin">24dp</dimen>
+    <dimen name="profile_display_name_text_size">32sp</dimen>
+    <dimen name="profile_avatar_size">200dp</dimen>
 </resources>
