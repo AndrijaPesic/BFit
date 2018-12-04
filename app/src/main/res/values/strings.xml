@@ -69,4 +69,9 @@
         automatically close after enabling device Location, click the button below.</string>
     <string name="no_location_button_continue">Continue</string>
 
+    <!-- AboutActivity -->
+    <string name="about_text">A fitness app is an application that can be downloaded on any mobile device and used anywhere to get fit.
+        As of 2015, the number of health-related apps released on the two leading platforms, iPhone operating system and Android,
+        had reached more than 165,000.</string>
+
 </resources>
