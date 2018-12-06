@@ -76,5 +76,7 @@
     <string name="pref_background_service_summary">Tracks your location and notifies you of nearby users when the app
         is not running.</string>
 
+    <!-- AboutActivity -->
+    <string name="about_text">BFit is the only fitness app that you\'ll ever need! At this moment it only supports Android devices and it can be used absolutely anywhere to get fit. </string>
 
 </resources>

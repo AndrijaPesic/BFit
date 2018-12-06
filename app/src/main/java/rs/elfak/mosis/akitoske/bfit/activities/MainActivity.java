@@ -276,6 +276,10 @@ public class MainActivity extends AppCompatActivity implements
                 Intent i = new Intent(MainActivity.this,ProfileActivity.class);
                 startActivity(i);
                 return true;
+            case R.id.action_bar_about_item:
+                i = new Intent(MainActivity.this,AboutActivity.class);
+                startActivity(i);
+                return true;
             case R.id.action_bar_logout_item:
                 FirebaseProvider.getInstance().getAuthInstance().signOut();
                 Intent logoutIntent = new Intent(MainActivity.this, SplashActivity.class);
