@@ -2,6 +2,8 @@ package rs.elfak.mosis.akitoske.bfit.providers;
 
 import android.net.Uri;
 
+import com.firebase.geofire.GeoFire;
+import com.firebase.geofire.GeoLocation;
 import com.google.android.gms.auth.api.signin.internal.Storage;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -16,6 +18,8 @@ import com.google.firebase.storage.UploadTask;
 import java.io.File;
 import java.util.Map;
 
+import rs.elfak.mosis.akitoske.bfit.models.CoordsModel;
+
 public class FirebaseProvider {
 
     private static FirebaseProvider mInstance = null;
@@ -28,6 +32,9 @@ public class FirebaseProvider {
 
     // Firebase Storage references
     private StorageReference mAvatarsStorageRef = FirebaseStorage.getInstance().getReference().child("avatars");
+
+    // Geofire
+    private GeoFire mUsersGeoFire = new GeoFire(mDbRef.child("usersGeoFire"));
 
     public static synchronized FirebaseProvider getInstance() {
         if (mInstance == null) {
@@ -73,4 +80,14 @@ public class FirebaseProvider {
     public Task<Void> updateUserInfo(String userId, Map<String, Object> newUserValues) {
         return mUsersDbRef.child(userId).updateChildren(newUserValues);
     }
+
+    public Task<Void> updateUserLocation(String userId, CoordsModel coords) {
+        mUsersGeoFire.setLocation(userId, new GeoLocation(coords.getLatitude(), coords.getLongitude()));
+        return mUsersDbRef.child(userId).child("coords").setValue(coords);
+    }
+
+    public GeoFire getUsersGeoFire() {
+        return mUsersGeoFire;
+    }
+
 }

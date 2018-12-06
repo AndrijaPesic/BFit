@@ -69,4 +69,12 @@
         automatically close after enabling device Location, click the button below.</string>
     <string name="no_location_button_continue">Continue</string>
 
+    <!-- Preferences -->
+    <string name="title_activity_settings">Settings</string>
+    <string name="pref_background_service_key">BackgroundService</string>
+    <string name="pref_background_service_title">Background Service</string>
+    <string name="pref_background_service_summary">Tracks your location and notifies you of nearby users when the app
+        is not running.</string>
+
+
 </resources>

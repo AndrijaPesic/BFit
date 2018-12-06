@@ -24,6 +24,7 @@ public class ProfileActivity extends AppCompatActivity {
     TextView mDisplayName;
     TextView mFullName;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 

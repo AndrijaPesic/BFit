@@ -2,17 +2,24 @@ package rs.elfak.mosis.akitoske.bfit.activities;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.IntentSender;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -20,6 +27,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.support.v7.widget.Toolbar;
 
@@ -40,7 +48,10 @@ import rs.elfak.mosis.akitoske.bfit.Constants;
 import rs.elfak.mosis.akitoske.bfit.R;
 import rs.elfak.mosis.akitoske.bfit.fragments.MapFragment;
 import rs.elfak.mosis.akitoske.bfit.fragments.NoLocationFragment;
+import rs.elfak.mosis.akitoske.bfit.models.UserModel;
 import rs.elfak.mosis.akitoske.bfit.providers.FirebaseProvider;
+import rs.elfak.mosis.akitoske.bfit.receivers.LocationProvidersChangedReceiver;
+import rs.elfak.mosis.akitoske.bfit.services.ForegroundLocationService;
 
 public class MainActivity extends AppCompatActivity implements
         MapFragment.OnFragmentInteractionListener,
@@ -51,6 +62,20 @@ public class MainActivity extends AppCompatActivity implements
 
     private FragmentManager mFragmentManager;
 
+    private boolean mUserLocationsBound = false;
+    private ForegroundLocationService mUserLocationService;
+
+    Spinner mFilterSpinner;
+
+    private BroadcastReceiver mLocationProvidersChangedReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            boolean isEnabled = intent.getBooleanExtra(LocationProvidersChangedReceiver.PROVIDERS_STATUS_KEY, false);
+            onLocationProvidersChanged(isEnabled);
+        }
+    };
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -60,26 +85,11 @@ public class MainActivity extends AppCompatActivity implements
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
+        // Setup default shared preferences if they haven't been setup already
+        PreferenceManager.setDefaultValues(MainActivity.this, R.xml.preferences, false);
+
         mFragmentManager = getSupportFragmentManager();
 
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        checkLocationSettings();
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CHECK_SETTINGS) {
-            if (resultCode == Activity.RESULT_OK) {
-                onLocationSettingsSatisfied();
-            } else {
-                onLocationSettingsUnsatisfied();
-            }
-        }
     }
 
     private void checkLocationSettings() {
@@ -137,6 +147,26 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CHECK_SETTINGS) {
+            if (resultCode == Activity.RESULT_OK) {
+                onLocationSettingsSatisfied();
+            } else {
+                onLocationSettingsUnsatisfied();
+            }
+        }
+    }
+
+    private void onLocationSettingsSatisfied() {
+        checkLocationPermission();
+    }
+
+    private void onLocationSettingsUnsatisfied() {
+        onOpenNoLocationScreen();
+    }
+
+    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -181,12 +211,12 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    private void onLocationSettingsSatisfied() {
-        checkLocationPermission();
-    }
-
-    private void onLocationSettingsUnsatisfied() {
-        onOpenNoLocationScreen();
+    private void onLocationProvidersChanged(boolean isEnabled) {
+        if (isEnabled) {
+            onLocationSettingsSatisfied();
+        } else {
+            onLocationSettingsUnsatisfied();
+        }
     }
 
     private void onLocationPermissionDenied() {
@@ -199,6 +229,9 @@ public class MainActivity extends AppCompatActivity implements
         locationRequest.setInterval(Constants.LOCATION_REQUEST_INTERVAL);
         locationRequest.setFastestInterval(Constants.LOCATION_REQUEST_FASTEST_INTERVAL);
         locationRequest.setPriority(Constants.LOCATION_REQUEST_PRIORITY);
+
+        Intent userLocationIntent = new Intent(this, ForegroundLocationService.class);
+        bindService(userLocationIntent, mUserLocationConnection, Context.BIND_AUTO_CREATE);
 
         // If there's nothing on the stack (no fragment loaded), load map
         if (mFragmentManager.getBackStackEntryCount() < 1) {
@@ -253,6 +286,60 @@ public class MainActivity extends AppCompatActivity implements
 
         // If none of the 'case' statements return true, we return false to let a specific fragment handle the option
         return false;
+    }
+
+    private ServiceConnection mUserLocationConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            ForegroundLocationService.LocalBinder binder = (ForegroundLocationService.LocalBinder) service;
+            mUserLocationService = binder.getService();
+            mUserLocationsBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mUserLocationsBound = false;
+        }
+    };
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        checkLocationSettings();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(this);
+        // Register a receiver for any changes in location providers (eg. from LocationProvidersChangedReceiver)
+        localBroadcastManager.registerReceiver(mLocationProvidersChangedReceiver,
+                new IntentFilter(LocationProvidersChangedReceiver.PROVIDERS_CHANGED_INTENT_ACTION));
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(this);
+        // Unregister the receivers in onPause because we can guarantee its execution
+        localBroadcastManager.unregisterReceiver(mLocationProvidersChangedReceiver);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // Unbind from any services this activity is bound to
+        if (mUserLocationsBound) {
+            unbindService(mUserLocationConnection);
+            mUserLocationsBound = false;
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mFragmentManager = null;
     }
 
 }
