@@ -8,4 +8,6 @@ public class Constants {
     public static final int LOCATION_REQUEST_FASTEST_INTERVAL = 1000;
     public static final int LOCATION_REQUEST_PRIORITY = LocationRequest.PRIORITY_HIGH_ACCURACY;
 
+    public static final int BASE_LEVEL_RADIUS = 250;
+
 }

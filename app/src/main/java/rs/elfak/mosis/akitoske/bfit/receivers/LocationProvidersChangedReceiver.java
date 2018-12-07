@@ -15,7 +15,7 @@ public class LocationProvidersChangedReceiver extends BroadcastReceiver {
 
     public static final String TAG = "LocationProviderChanged";
 
-    public static final String PROVIDERS_CHANGED_INTENT_ACTION = "rs.elfak.jajac.geowarfare.providers-changed";
+    public static final String PROVIDERS_CHANGED_INTENT_ACTION = "rs.elfak.mosis.akitoske.bfit.providers-changed";
     public static final String PROVIDERS_STATUS_KEY = "is-enabled";
 
     @Override

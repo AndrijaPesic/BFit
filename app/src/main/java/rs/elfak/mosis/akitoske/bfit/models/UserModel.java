@@ -1,10 +1,12 @@
 package rs.elfak.mosis.akitoske.bfit.models;
 
 import com.google.firebase.database.Exclude;
+import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@IgnoreExtraProperties
 public class UserModel {
 
     public static final String KEY_USER_ID = "id";
@@ -21,6 +23,9 @@ public class UserModel {
     private String phone;
     private String avatarUrl;
 
+    private CoordsModel coords;
+    private Map<String, Boolean> friends = new HashMap<>();
+
     public UserModel() {
         // Default constructor required for calls to DataSnapshot.getValue(UserModel.class)
     }
@@ -32,6 +37,8 @@ public class UserModel {
         this.fullName = fullName;
         this.phone = phone;
         this.avatarUrl = imgUrl;
+
+        this.coords = new CoordsModel(0, 0);
     }
 
     @Exclude
@@ -94,4 +101,21 @@ public class UserModel {
     public void setAvatarUrl(String avatarUrl) {
         this.avatarUrl = avatarUrl;
     }
+
+    public Map<String, Boolean> getFriends() {
+        return friends;
+    }
+
+    public void setFriends(Map<String, Boolean> friends) {
+        this.friends = friends;
+    }
+
+    public CoordsModel getCoords() {
+        return coords;
+    }
+
+    public void setCoords(CoordsModel coords) {
+        this.coords = coords;
+    }
+
 }

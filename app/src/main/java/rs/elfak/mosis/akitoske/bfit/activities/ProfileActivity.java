@@ -1,5 +1,6 @@
 package rs.elfak.mosis.akitoske.bfit.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -30,9 +31,11 @@ public class ProfileActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
+        Intent myIntent = getIntent();
+        String mLoggedUserId = myIntent.getStringExtra("userId");
 
         mAuth = FirebaseAuth.getInstance();
-        DatabaseReference users = FirebaseProvider.getInstance().getUserById(mAuth.getCurrentUser().getUid());
+        DatabaseReference users = FirebaseProvider.getInstance().getUserById(mLoggedUserId);
         users.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {

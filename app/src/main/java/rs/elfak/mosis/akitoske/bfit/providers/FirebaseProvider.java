@@ -9,6 +9,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
@@ -82,8 +83,20 @@ public class FirebaseProvider {
     }
 
     public Task<Void> updateUserLocation(String userId, CoordsModel coords) {
-        mUsersGeoFire.setLocation(userId, new GeoLocation(coords.getLatitude(), coords.getLongitude()));
-        return mUsersDbRef.child(userId).child("coords").setValue(coords);
+
+        mUsersGeoFire.setLocation(userId, new GeoLocation(coords.getLatitude(), coords.getLongitude()), new
+                GeoFire.CompletionListener(){
+                    @Override
+                    public void onComplete(String key, DatabaseError error) {
+                        if (error != null) {
+                            System.err.println("There was an error saving the location to GeoFire: " + error);
+                        } else {
+                            System.out.println("Location saved on server successfully!");
+                        }
+                    }
+                });
+
+       return mUsersDbRef.child(userId).child("coords").setValue(coords);
     }
 
     public GeoFire getUsersGeoFire() {

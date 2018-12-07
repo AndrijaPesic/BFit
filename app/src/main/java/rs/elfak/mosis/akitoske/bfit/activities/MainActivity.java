@@ -52,6 +52,7 @@ import rs.elfak.mosis.akitoske.bfit.models.UserModel;
 import rs.elfak.mosis.akitoske.bfit.providers.FirebaseProvider;
 import rs.elfak.mosis.akitoske.bfit.receivers.LocationProvidersChangedReceiver;
 import rs.elfak.mosis.akitoske.bfit.services.ForegroundLocationService;
+import rs.elfak.mosis.akitoske.bfit.services.UserUpdatesService;
 
 public class MainActivity extends AppCompatActivity implements
         MapFragment.OnFragmentInteractionListener,
@@ -62,10 +63,23 @@ public class MainActivity extends AppCompatActivity implements
 
     private FragmentManager mFragmentManager;
 
+    private boolean mUserUpdatesBound = false;
+    private UserUpdatesService mUserUpdatesService;
+
     private boolean mUserLocationsBound = false;
     private ForegroundLocationService mUserLocationService;
 
+    private String mLoggedUserId;
+    private UserModel mLoggedUser;
+
     Spinner mFilterSpinner;
+
+    private BroadcastReceiver mUserUpdatesReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            onUserDataUpdated();
+        }
+    };
 
     private BroadcastReceiver mLocationProvidersChangedReceiver = new BroadcastReceiver() {
         @Override
@@ -87,6 +101,9 @@ public class MainActivity extends AppCompatActivity implements
 
         // Setup default shared preferences if they haven't been setup already
         PreferenceManager.setDefaultValues(MainActivity.this, R.xml.preferences, false);
+
+        FirebaseProvider firebaseProvider = FirebaseProvider.getInstance();
+        mLoggedUserId = firebaseProvider.getCurrentFirebaseUser().getUid();
 
         mFragmentManager = getSupportFragmentManager();
 
@@ -232,6 +249,8 @@ public class MainActivity extends AppCompatActivity implements
 
         Intent userLocationIntent = new Intent(this, ForegroundLocationService.class);
         bindService(userLocationIntent, mUserLocationConnection, Context.BIND_AUTO_CREATE);
+        Intent userUpdatesIntent = new Intent(this, UserUpdatesService.class);
+        bindService(userUpdatesIntent, mUserUpdatesConnection, Context.BIND_AUTO_CREATE);
 
         // If there's nothing on the stack (no fragment loaded), load map
         if (mFragmentManager.getBackStackEntryCount() < 1) {
@@ -274,6 +293,7 @@ public class MainActivity extends AppCompatActivity implements
         switch (item.getItemId()) {
             case R.id.action_bar_profile_item:
                 Intent i = new Intent(MainActivity.this,ProfileActivity.class);
+                i.putExtra("userId", mLoggedUserId);
                 startActivity(i);
                 return true;
             case R.id.action_bar_about_item:
@@ -291,6 +311,24 @@ public class MainActivity extends AppCompatActivity implements
         // If none of the 'case' statements return true, we return false to let a specific fragment handle the option
         return false;
     }
+
+    private void onUserDataUpdated() {
+        mLoggedUser = mUserUpdatesService.getUser();
+    }
+
+    private ServiceConnection mUserUpdatesConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            UserUpdatesService.LocalBinder binder = (UserUpdatesService.LocalBinder) service;
+            mUserUpdatesService = binder.getService();
+            mUserUpdatesBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mUserUpdatesBound = false;
+        }
+    };
 
     private ServiceConnection mUserLocationConnection = new ServiceConnection() {
         @Override
@@ -317,6 +355,9 @@ public class MainActivity extends AppCompatActivity implements
     protected void onResume() {
         super.onResume();
         LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(this);
+        // Register a receiver for any changes in the user data (eg. from UserUpdatesService)
+        localBroadcastManager.registerReceiver(mUserUpdatesReceiver,
+                new IntentFilter(UserUpdatesService.USER_UPDATED_INTENT_ACTION));
         // Register a receiver for any changes in location providers (eg. from LocationProvidersChangedReceiver)
         localBroadcastManager.registerReceiver(mLocationProvidersChangedReceiver,
                 new IntentFilter(LocationProvidersChangedReceiver.PROVIDERS_CHANGED_INTENT_ACTION));
@@ -327,6 +368,7 @@ public class MainActivity extends AppCompatActivity implements
         super.onPause();
         LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(this);
         // Unregister the receivers in onPause because we can guarantee its execution
+        localBroadcastManager.unregisterReceiver(mUserUpdatesReceiver);
         localBroadcastManager.unregisterReceiver(mLocationProvidersChangedReceiver);
     }
 
@@ -334,6 +376,10 @@ public class MainActivity extends AppCompatActivity implements
     protected void onStop() {
         super.onStop();
         // Unbind from any services this activity is bound to
+        if (mUserUpdatesBound) {
+            unbindService(mUserUpdatesConnection);
+            mUserUpdatesBound = false;
+        }
         if (mUserLocationsBound) {
             unbindService(mUserLocationConnection);
             mUserLocationsBound = false;
@@ -344,6 +390,7 @@ public class MainActivity extends AppCompatActivity implements
     protected void onDestroy() {
         super.onDestroy();
         mFragmentManager = null;
+        mLoggedUserId = null;
     }
 
 }

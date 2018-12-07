@@ -152,7 +152,16 @@ public class BackgroundLocationService extends Service implements
             mUsersGeoQuery = mUsersGeoFire.queryAtLocation(geoLoc, 0.100);
             addUserGeoQueryEventListener();
         } else {
-            mUsersGeoFire.setLocation(mUser.getUid(), geoLoc);
+            mUsersGeoFire.setLocation(mUser.getUid(), geoLoc, new GeoFire.CompletionListener(){
+                        @Override
+                        public void onComplete(String key, DatabaseError error) {
+                            if (error != null) {
+                                System.err.println("There was an error saving the location to GeoFire: " + error);
+                            } else {
+                                System.out.println("Location saved on server successfully!");
+                            }
+                        }
+                    });
             mUsersGeoQuery.setCenter(geoLoc);
         }
 
