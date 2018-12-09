@@ -296,6 +296,10 @@ public class MainActivity extends AppCompatActivity implements
                 i.putExtra("userId", mLoggedUserId);
                 startActivity(i);
                 return true;
+            case R.id.action_bar_settings_item:
+                i = new Intent(MainActivity.this,SettingsActivity.class);
+                startActivity(i);
+                return true;
             case R.id.action_bar_about_item:
                 i = new Intent(MainActivity.this,AboutActivity.class);
                 startActivity(i);
