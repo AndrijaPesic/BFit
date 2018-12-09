@@ -52,7 +52,7 @@ public class ConnectThread extends Thread {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         mAuth=FirebaseAuth.getInstance();
 
-        String aString="FitChallenger123";
+        String aString="BFit";
         UUID uuid = UUID.nameUUIDFromBytes(aString.getBytes());
 
 

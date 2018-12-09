@@ -80,7 +80,7 @@ public class AcceptThread extends Thread {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         this.mHandler=handler;
         mAuth=FirebaseAuth.getInstance();
-        String aString="FitChallenger123";
+        String aString="BFit";
         UUID uuid = UUID.nameUUIDFromBytes(aString.getBytes());
 
         try {
@@ -89,7 +89,7 @@ public class AcceptThread extends Thread {
 
             //FirebaseUser user = mAuth.getCurrentUser();
             //String myID = user.getUid();
-            tmp = mBluetoothAdapter.listenUsingRfcommWithServiceRecord("FitChallenger", uuid);
+            tmp = mBluetoothAdapter.listenUsingRfcommWithServiceRecord("BFit", uuid);
         }
         catch (IOException e)
         {
