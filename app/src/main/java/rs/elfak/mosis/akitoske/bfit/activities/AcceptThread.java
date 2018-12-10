@@ -1,28 +1,19 @@
 package rs.elfak.mosis.akitoske.bfit.activities;
 
-import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 
-import android.content.Context;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import android.app.Application;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.UUID;
-import android.app.ActivityManager;
-import android.content.ComponentName;
+
 
 public class AcceptThread extends Thread {
 
@@ -41,25 +32,6 @@ public class AcceptThread extends Thread {
     FirebaseAuth mAuth;
 
     public Handler mHandler;
-
-  /*  @SuppressLint("HandlerLeak")
-    public static android.os.Handler mHandler=new android.os.Handler(){
-        @Override
-        public void handleMessage(android.os.Message msg) {
-            //super.handleMessage(msg);
-            Log.i("Podaci: ","uso");
-            switch (msg.what)
-            {
-                case ConnectThread.MessageConstants.MESSAGE_READ:
-                    byte[] b = (byte[]) msg.obj;
-                    String s = new String(b,0,msg.arg1);
-                    Log.i("Podaci: ",s);
-                    break;
-            }
-
-        }
-    };
-*/
 
     public void setActivity(SettingsActivity settingsActivity)
     {
@@ -87,8 +59,6 @@ public class AcceptThread extends Thread {
             Log.i("tag", "create server");
             // MY_UUID is the app's UUID string, also used by the client code.
 
-            //FirebaseUser user = mAuth.getCurrentUser();
-            //String myID = user.getUid();
             tmp = mBluetoothAdapter.listenUsingRfcommWithServiceRecord("BFit", uuid);
         }
         catch (IOException e)

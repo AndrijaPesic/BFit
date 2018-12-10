@@ -6,13 +6,10 @@ import android.bluetooth.BluetoothDevice;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.lang.reflect.Method;
-import java.nio.charset.Charset;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -77,11 +74,6 @@ public class ConnectThread extends Thread {
             // until it succeeds or throws an exception.
             Log.i("tag", "connect client");
             mmSocket.connect();
-            // OutputStream tmpOut= mmSocket.getOutputStream();
-            //InputStream tmpIn = mmSocket.getInputStream();
-
-            //mmInStream = tmpIn;
-            // mmOutStream = tmpOut;
 
         } catch (IOException connectException) {
             // Unable to connect; close the socket and return.
@@ -118,12 +110,6 @@ public class ConnectThread extends Thread {
 
             OutputStream otp = mmSocket.getOutputStream();
             otp.write(mmBuffer);
-            //numBytes = mmInStream.read(mmBuffer);
-            // Send the obtained bytes to the UI activity.
-            // Message readMsg = mHandler.obtainMessage(ConnectThread.MessageConstants.MESSAGE_WRITE, 28, -1, mmBuffer);
-            // readMsg.sendToTarget();
-
-            //byte[] buf=new byte[1];
             InputStream in = mmSocket.getInputStream();
             in.read(mmBuffer);
             Log.v("klijent", "unpair");
@@ -135,10 +121,6 @@ public class ConnectThread extends Thread {
             Log.getStackTraceString(e);
             //break;
         }
-
-        //Toast.makeText(ConnectThread.this,"cao",)
-        //}
-        //mmSocket.getOutputStream().write(Byte.parseByte("cao"));
     }
 
     // Closes the client socket and causes the thread to finish.
