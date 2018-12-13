@@ -51,8 +51,10 @@ import java.util.Map;
 
 import rs.elfak.mosis.akitoske.bfit.Constants;
 import rs.elfak.mosis.akitoske.bfit.R;
+import rs.elfak.mosis.akitoske.bfit.activities.ChallengeActivity;
 import rs.elfak.mosis.akitoske.bfit.activities.MainActivity;
 import rs.elfak.mosis.akitoske.bfit.activities.ProfileActivity;
+import rs.elfak.mosis.akitoske.bfit.models.ChallengeModel;
 import rs.elfak.mosis.akitoske.bfit.models.CoordsModel;
 import rs.elfak.mosis.akitoske.bfit.models.UserModel;
 import rs.elfak.mosis.akitoske.bfit.providers.FirebaseProvider;
@@ -64,25 +66,29 @@ public class MapFragment extends BaseFragment implements
 
     public static final String FRAGMENT_TAG = "MapFragment";
 
-    private Context mContext;
+    private FloatingActionButton mChallengeButton;
 
+    private Context mContext;
     private FirebaseProvider mFirebaseProvider;
     private FirebaseUser mUser;
 
     private GoogleMap mGoogleMap;
     private MapView mMapView;
     private Circle mCircle;
-    private float mRadius = 0;
+    private float mRadius = 500;
     private Map<String, Marker> mMarkers = new HashMap<>();
     private Map<Marker, GoogleMap.OnMarkerClickListener> mMarkerListeners = new HashMap<>();
     private CoordsModel mMyLocation;
     private CoordsModel mMyLastKnownLocation;
 
     private Map<String, UserModel> mNearbyUsers = new HashMap<>();
+    private Map<String, ChallengeModel> mNearbyChallenges = new HashMap<>();
 
     private GoogleMap.OnMarkerClickListener mUserMarkerListener;
+    private GoogleMap.OnMarkerClickListener mChallengeMarkerListener;
 
     private GeoQuery mUsersGeoQuery;
+    private GeoQuery mChallengesGeoQuery;
 
     private BroadcastReceiver mUserLocationReceiver = new BroadcastReceiver() {
         @Override
@@ -120,18 +126,14 @@ public class MapFragment extends BaseFragment implements
                 return true;
             }
         };
-    }
 
-    @Override
-    public boolean onMarkerClick(Marker marker) {
-        return mMarkerListeners.get(marker).onMarkerClick(marker);
-    }
-
-    private void onUserMarkerClick(Marker marker) {
-        UserModel user = (UserModel) marker.getTag();
-        Intent i = new Intent(getActivity(), ProfileActivity.class);
-        i.putExtra("userId", user.getId());
-        startActivity(i);
+        mChallengeMarkerListener = new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                onChallengeMarkerClick(marker);
+                return true;
+            }
+        };
     }
 
     @Nullable
@@ -140,7 +142,8 @@ public class MapFragment extends BaseFragment implements
                              @Nullable Bundle savedInstanceState) {
         View inflatedView = inflater.inflate(R.layout.fragment_map, container, false);
 
-        mMapView = (MapView) inflatedView.findViewById(R.id.map_fragment_map_view);
+        mChallengeButton = inflatedView.findViewById(R.id.map_fragment_challenge_button);
+        mMapView = inflatedView.findViewById(R.id.map_fragment_map_view);
         mMapView.onCreate(savedInstanceState);
         mMapView.getMapAsync(this);
 
@@ -163,45 +166,15 @@ public class MapFragment extends BaseFragment implements
             e.printStackTrace();
         }
 
+        mChallengeButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                onChallengeClick();
+            }
+        });
+
         if (mMyLastKnownLocation != null && mMyLocation == null) {
             onNewLocation(mMyLastKnownLocation);
-        }
-    }
-
-    private void onNewLocation(CoordsModel loc) {
-        LatLng center = new LatLng(loc.getLatitude(), loc.getLongitude());
-        GeoLocation geoLoc = new GeoLocation(loc.getLatitude(), loc.getLongitude());
-
-        FirebaseProvider firebaseProvider = FirebaseProvider.getInstance();
-        GeoFire usersGeoFire = firebaseProvider.getUsersGeoFire();
-
-        // We need to setup some things only when we receive location for the first time,
-        // such as to move camera there, create the circle, starting querying the area...
-        if (mMyLocation == null) {
-            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(center, 16.0f - 0.3f *
-                    mRadius / Constants.BASE_LEVEL_RADIUS));
-
-            mCircle = mGoogleMap.addCircle(new CircleOptions()
-                    .center(new LatLng(loc.getLatitude(), loc.getLongitude()))
-                    .radius(mRadius)
-                    .strokeWidth(10)
-                    .strokeColor(Color.argb(80, 69, 90, 100))
-                    .fillColor(Color.argb(40, 255, 171, 0))
-            );
-
-            mUsersGeoQuery = usersGeoFire.queryAtLocation(geoLoc, mRadius / 1000);
-            addUserGeoQueryEventListener();
-
-        } else {
-            mCircle.setCenter(center);
-            // Update the center of the area we're querying for users
-            mUsersGeoQuery.setCenter(geoLoc);
-        }
-
-        mMyLocation = loc;
-
-        if (mMyLastKnownLocation != null) {
-            mMyLastKnownLocation = null;
         }
     }
 
@@ -246,6 +219,50 @@ public class MapFragment extends BaseFragment implements
         });
     }
 
+    private void addChallengesGeoQueryEventListener() {
+        mChallengesGeoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
+            @Override
+            public void onKeyEntered(String key, GeoLocation location) {
+                if (mGoogleMap != null) {
+                    addChallengeMarker(key, location);
+                }
+            }
+
+            @Override
+            public void onKeyExited(String key) {
+                if (mGoogleMap != null) {
+                    Marker marker = mMarkers.get(key);
+
+                    // onKeyExited gets called twice for some reason
+                    // so we need to avoid executing this twice
+                    if (marker == null) {
+                        return;
+                    }
+
+                    mMarkers.remove(key);
+                    mNearbyChallenges.remove(key);
+                    mMarkerListeners.remove(marker);
+                    marker.remove();
+                }
+            }
+
+            @Override
+            public void onKeyMoved(String key, GeoLocation location) {
+
+            }
+
+            @Override
+            public void onGeoQueryReady() {
+
+            }
+
+            @Override
+            public void onGeoQueryError(DatabaseError error) {
+
+            }
+        });
+    }
+
     private void addUserMarker(final String userId, final GeoLocation location) {
         // Create a (temporary) invisible marker
         MarkerOptions markerOptions = new MarkerOptions();
@@ -270,7 +287,7 @@ public class MapFragment extends BaseFragment implements
 
                 // If the nearby detected user is not a friend, marker shows a simple icon
                 if (!user.getFriends().containsKey(mUser.getUid())) {
-                    BitmapDescriptor crownIcon = getBitmapFromVector(R.drawable.common_google_signin_btn_icon_dark_focused,
+                    BitmapDescriptor crownIcon = getBitmapFromVector(R.drawable.ic_runner,
                             ContextCompat.getColor(mContext, R.color.colorPrimary));
                     marker.setIcon(crownIcon);
                     marker.setVisible(true);
@@ -306,6 +323,42 @@ public class MapFragment extends BaseFragment implements
         });
     }
 
+    private void addChallengeMarker(final String challengeId, final GeoLocation location) {
+        // Create a (temporary) invisible marker
+        MarkerOptions markerOptions = new MarkerOptions();
+        markerOptions.position(new LatLng(location.latitude, location.longitude));
+        markerOptions.visible(false);
+        markerOptions.anchor(0.5f, 0.5f);
+        final Marker marker = mGoogleMap.addMarker(markerOptions);
+
+        mFirebaseProvider.getChallengeById(challengeId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // Associate the challenge data with the marker and add the marker to the HashMaps
+                ChallengeModel challenge = dataSnapshot.getValue(ChallengeModel.class);
+                challenge.setId(dataSnapshot.getKey());
+
+                marker.setTag(challenge);
+
+                mNearbyChallenges.put(challengeId, challenge);
+                mMarkers.put(challenge.getId(), marker);
+                mMarkerListeners.put(marker, mChallengeMarkerListener);
+
+                int iconColorId = R.color.colorPrimaryDark;
+                if (mUser.getUid().equals(challenge.getOwnerId())) {
+                    iconColorId = R.color.colorPrimaryLight;
+                }
+                marker.setIcon(getBitmapFromVector(R.drawable.ic_crown, ContextCompat.getColor(mContext, iconColorId)));
+                marker.setVisible(true);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
     private BitmapDescriptor getBitmapFromVector(int resourceId, int color) {
         Drawable vectorDrawable = ResourcesCompat.getDrawable(getResources(), resourceId, null);
         Bitmap bitmap = Bitmap.createBitmap(75, 75, Bitmap.Config.ARGB_8888);
@@ -314,6 +367,91 @@ public class MapFragment extends BaseFragment implements
         DrawableCompat.setTint(vectorDrawable, color);
         vectorDrawable.draw(canvas);
         return BitmapDescriptorFactory.fromBitmap(bitmap);
+    }
+
+    private void onChallengeClick() {
+        Intent i = new Intent(getActivity(), ChallengeActivity.class);
+        startActivity(i);
+    }
+
+    public void onFilterChanged(int position, UserModel mLoggedUser) {
+        switch (position) {
+            case MainActivity.FILTER_ALL:
+                for (UserModel user : mNearbyUsers.values()) {
+                    Marker marker = mMarkers.get(user.getId());
+                    marker.setVisible(true);
+                }
+                for (ChallengeModel challenge : mNearbyChallenges.values()) {
+                    Marker marker = mMarkers.get(challenge.getId());
+                    marker.setVisible(true);
+                }
+                break;
+            case MainActivity.FILTER_FRIENDS:
+                for (UserModel user : mNearbyUsers.values()) {
+                    Marker marker = mMarkers.get(user.getId());
+                    marker.setVisible(mLoggedUser.getFriends().containsKey(user.getId()));
+                }
+                break;
+        }
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        return mMarkerListeners.get(marker).onMarkerClick(marker);
+    }
+
+    private void onUserMarkerClick(Marker marker) {
+        UserModel user = (UserModel) marker.getTag();
+        Intent i = new Intent(getActivity(), ProfileActivity.class);
+        i.putExtra("userId", user.getId());
+        startActivity(i);
+    }
+
+    private void onChallengeMarkerClick(Marker marker) {
+            ChallengeModel challenge = (ChallengeModel) marker.getTag();
+            Intent i = new Intent(getActivity(), ChallengeActivity.class);
+            i.putExtra("challengeId", challenge.getId());
+            startActivity(i);
+    }
+
+    private void onNewLocation(CoordsModel loc) {
+        LatLng center = new LatLng(loc.getLatitude(), loc.getLongitude());
+        GeoLocation geoLoc = new GeoLocation(loc.getLatitude(), loc.getLongitude());
+
+        FirebaseProvider firebaseProvider = FirebaseProvider.getInstance();
+        GeoFire usersGeoFire = firebaseProvider.getUsersGeoFire();
+        GeoFire challengesGeoFire= firebaseProvider.getChallengesGeoFire();
+
+        // We need to setup some things only when we receive location for the first time,
+        // such as to move camera there, create the circle, starting querying the area...
+        if (mMyLocation == null) {
+            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(center, 16.0f - 0.3f *
+                    mRadius / Constants.BASE_LEVEL_RADIUS));
+
+            mCircle = mGoogleMap.addCircle(new CircleOptions()
+                    .center(new LatLng(loc.getLatitude(), loc.getLongitude()))
+                    .radius(mRadius)
+                    .strokeWidth(10)
+                    .strokeColor(Color.argb(80, 100, 181, 219))
+                    .fillColor(Color.argb(40, 182, 255, 140))
+            );
+
+            mUsersGeoQuery = usersGeoFire.queryAtLocation(geoLoc, mRadius / 1000);
+            mChallengesGeoQuery = challengesGeoFire.queryAtLocation(geoLoc, mRadius / 1000);
+            addUserGeoQueryEventListener();
+            addChallengesGeoQueryEventListener();
+        } else {
+            mCircle.setCenter(center);
+            // Update the center of the area we're querying for users
+            mUsersGeoQuery.setCenter(geoLoc);
+            mChallengesGeoQuery.setCenter(geoLoc);
+        }
+
+        mMyLocation = loc;
+
+        if (mMyLastKnownLocation != null) {
+            mMyLastKnownLocation = null;
+        }
     }
 
     @Override

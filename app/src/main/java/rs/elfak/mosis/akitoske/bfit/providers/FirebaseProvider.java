@@ -30,12 +30,14 @@ public class FirebaseProvider {
     // Firebase Realtime Database references
     private DatabaseReference mDbRef = FirebaseDatabase.getInstance().getReference();
     private DatabaseReference mUsersDbRef = mDbRef.child("users");
+    private DatabaseReference mChallengesDbRef = mDbRef.child("challenges");
 
     // Firebase Storage references
     private StorageReference mAvatarsStorageRef = FirebaseStorage.getInstance().getReference().child("avatars");
 
     // Geofire
     private GeoFire mUsersGeoFire = new GeoFire(mDbRef.child("usersGeoFire"));
+    private GeoFire mChallengesGeoFire = new GeoFire(mDbRef.child("challengesGeoFire"));
 
     public static synchronized FirebaseProvider getInstance() {
         if (mInstance == null) {
@@ -103,4 +105,11 @@ public class FirebaseProvider {
         return mUsersGeoFire;
     }
 
+    // ********************************************* CHALLENGES ********************************************* //
+
+    public DatabaseReference getChallengeById(String challengeId) {
+        return mChallengesDbRef.child(challengeId);
+    }
+
+    public GeoFire getChallengesGeoFire() { return mChallengesGeoFire; }
 }

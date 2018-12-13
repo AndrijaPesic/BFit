@@ -20,6 +20,8 @@ import rs.elfak.mosis.akitoske.bfit.providers.FirebaseProvider;
 
 public class ProfileActivity extends AppCompatActivity {
 
+
+    // UI elements
     FirebaseAuth mAuth;
     ImageView mAvatarImage;
     TextView mDisplayName;

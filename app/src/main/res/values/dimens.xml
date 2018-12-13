@@ -4,6 +4,9 @@
     <dimen name="login_field_horizontal_margin">48dp</dimen>
     <dimen name="login_field_top_margin">8dp</dimen>
 
+    <dimen name="toolbar_spinner_text_size">16sp</dimen>
+    <dimen name="toolbar_spinner_dropdown_item_padding">16dp</dimen>
+
     <dimen name="edit_info_avatar_size">100dp</dimen>
 
     <dimen name="profile_banner_background_height">200dp</dimen>
@@ -14,5 +17,8 @@
 
     <dimen name="no_location_icon_size">100dp</dimen>
     <dimen name="no_location_vertical_margin">40dp</dimen>
+
+    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="fab_size">56dp</dimen>
 
 </resources>
