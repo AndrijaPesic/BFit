@@ -51,7 +51,7 @@
     <string name="action_bar_leaderboard">Leaderboard</string>
     <string name="action_bar_about">About</string>
     <string name="action_bar_friends">Friends</string>
-    <string name="action_bar_research">Research</string>
+    <string name="action_bar_challenge">Challenge</string>
     <string name="action_bar_logout">Logout</string>
     <string name="action_bar_edit">Edit</string>
     <string name="action_bar_save">Save</string>

@@ -12,7 +12,6 @@ import rs.elfak.mosis.akitoske.bfit.R;
 
 public class SettingsActivity extends AppCompatActivity {
     BluetoothAdapter mBluetoothAdapter;
-    AcceptThread serverThread;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,11 +55,6 @@ public class SettingsActivity extends AppCompatActivity {
                 {
                     //Toast.makeText(SettingsActivity.this, "Bluetooth off", Toast.LENGTH_LONG).show();
                     mBluetoothAdapter.disable();
-
-                    if (serverThread != null)
-                        serverThread.cancel();
-                    //iskljuci visible
-                    //iskljuci server
                 }
 
             }

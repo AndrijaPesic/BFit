@@ -27,6 +27,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.support.v7.widget.Toolbar;
@@ -60,6 +61,9 @@ public class MainActivity extends AppCompatActivity implements
 
     public static final int REQUEST_CHECK_SETTINGS = 1;
     public static final int REQUEST_LOCATION_PERMISSION = 2;
+
+    public static final int FILTER_ALL = 0;
+    public static final int FILTER_FRIENDS = 1;
 
     private FragmentManager mFragmentManager;
 
@@ -99,6 +103,8 @@ public class MainActivity extends AppCompatActivity implements
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
+        mFilterSpinner = findViewById(R.id.toolbar_filter_spinner);
+
         // Setup default shared preferences if they haven't been setup already
         PreferenceManager.setDefaultValues(MainActivity.this, R.xml.preferences, false);
 
@@ -107,6 +113,14 @@ public class MainActivity extends AppCompatActivity implements
 
         mFragmentManager = getSupportFragmentManager();
 
+        // Initialize the action bar spinner for filtering map markers
+        ArrayAdapter<String> spinAdapter = new ArrayAdapter<String>(
+                this,
+                R.layout.toolbar_spinner_selected_item,
+                getResources().getStringArray(R.array.filter_array)
+        );
+        spinAdapter.setDropDownViewResource(R.layout.toolbar_spinner_dropdown_item);
+        mFilterSpinner.setAdapter(spinAdapter);
     }
 
     private void checkLocationSettings() {
@@ -353,6 +367,21 @@ public class MainActivity extends AppCompatActivity implements
     protected void onStart() {
         super.onStart();
         checkLocationSettings();
+
+        mFilterSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                MapFragment mapFragment = (MapFragment) mFragmentManager.findFragmentByTag(MapFragment.FRAGMENT_TAG);
+                if (mapFragment != null) {
+                    mapFragment.onFilterChanged(position, mLoggedUser);
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
     }
 
     @Override
