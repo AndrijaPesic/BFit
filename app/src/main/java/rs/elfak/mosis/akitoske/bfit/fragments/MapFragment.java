@@ -79,6 +79,7 @@ public class MapFragment extends BaseFragment implements
     private Map<Marker, GoogleMap.OnMarkerClickListener> mMarkerListeners = new HashMap<>();
     private CoordsModel mMyLocation;
     private CoordsModel mMyLastKnownLocation;
+    private boolean mSearch = true;
 
     private Map<String, UserModel> mNearbyUsers = new HashMap<>();
     private Map<String, ChallengeModel> mNearbyChallenges = new HashMap<>();
@@ -175,8 +176,38 @@ public class MapFragment extends BaseFragment implements
             }
         });
 
+        mSearchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onSearchClick();
+            }
+        });
+
         if (mMyLastKnownLocation != null && mMyLocation == null) {
             onNewLocation(mMyLastKnownLocation);
+        }
+    }
+
+    private void onSearchClick(){
+            if (mSearch){
+                updateRadius(Constants.BASE_LEVEL_RADIUS + 150);
+                mSearch = false;
+            } else {
+                updateRadius( Constants.BASE_LEVEL_RADIUS);
+                mSearch = true;
+            }
+    }
+
+    public void updateRadius(int newRadius) {
+        mRadius = newRadius;
+        if (mCircle != null) {
+            mCircle.setRadius(mRadius);
+        }
+        if (mUsersGeoQuery != null) {
+            mUsersGeoQuery.setRadius(mRadius / 1000);
+        }
+        if (mChallengesGeoQuery != null) {
+            mChallengesGeoQuery.setRadius(mRadius / 1000);
         }
     }
 
@@ -411,7 +442,22 @@ public class MapFragment extends BaseFragment implements
                     Marker marker = mMarkers.get(user.getId());
                     marker.setVisible(mLoggedUser.getFriends().containsKey(user.getId()));
                 }
+                for (ChallengeModel challenge : mNearbyChallenges.values()) {
+                    Marker marker = mMarkers.get(challenge.getId());
+                    boolean isMyChallenge = mLoggedUser.getChallenges().containsKey(challenge.getId());
+                    marker.setVisible(isMyChallenge || mLoggedUser.getFriends().containsKey(challenge.getOwnerId()));
+                }
                 break;
+            case MainActivity.FILTER_OTHERS:
+                for (UserModel user : mNearbyUsers.values()) {
+                    Marker marker = mMarkers.get(user.getId());
+                    marker.setVisible(!mLoggedUser.getFriends().containsKey(user.getId()));
+                }
+                for (ChallengeModel challenge : mNearbyChallenges.values()) {
+                    Marker marker = mMarkers.get(challenge.getId());
+                    boolean isMyChallenge = mLoggedUser.getChallenges().containsKey(challenge.getId());
+                    marker.setVisible(isMyChallenge || !mLoggedUser.getFriends().containsKey(challenge.getOwnerId()));
+                }
         }
     }
 

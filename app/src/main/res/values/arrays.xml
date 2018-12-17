@@ -4,6 +4,7 @@
     <string-array name="filter_array">
         <item>All</item>
         <item>Friends</item>
+        <item>Others</item>
     </string-array>
 
 </resources>

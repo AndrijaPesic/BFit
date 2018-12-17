@@ -79,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements
 
     public static final int FILTER_ALL = 0;
     public static final int FILTER_FRIENDS = 1;
+    public static final int FILTER_OTHERS = 2;
 
     private FragmentManager mFragmentManager;
 
