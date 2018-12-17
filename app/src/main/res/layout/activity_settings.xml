@@ -7,6 +7,14 @@
     android:layout_height="match_parent"
     tools:context=".activities.SettingsActivity">
 
+    <FrameLayout
+        android:id="@+id/settings_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+    </FrameLayout>
+
+    <!--
     <TextView
         android:id="@+id/textView16"
         android:layout_width="wrap_content"
@@ -30,5 +38,5 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:checked="false" />
-
+    -->
 </android.support.constraint.ConstraintLayout>

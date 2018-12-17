@@ -58,4 +58,36 @@
         android:textSize="@dimen/profile_display_name_text_size"
         android:textAlignment="center"/>
 
+    <LinearLayout
+        android:id="@+id/profile_friend_request_group"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/profile_full_name"
+        android:paddingLeft="32dp"
+        android:paddingRight="32dp"
+        android:visibility="gone">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/colorDivider"
+            android:layout_marginBottom="@dimen/profile_divider_margin"/>
+
+        <Button
+            android:id="@+id/profile_friend_request_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/colorDivider"
+            android:layout_marginTop="@dimen/profile_divider_margin"/>
+
+    </LinearLayout>
+
 </android.support.constraint.ConstraintLayout>

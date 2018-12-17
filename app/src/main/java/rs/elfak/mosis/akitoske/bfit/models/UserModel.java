@@ -6,6 +6,8 @@ import com.google.firebase.database.IgnoreExtraProperties;
 import java.util.HashMap;
 import java.util.Map;
 
+import rs.elfak.mosis.akitoske.bfit.Constants;
+
 @IgnoreExtraProperties
 public class UserModel {
 
@@ -15,6 +17,8 @@ public class UserModel {
     public static final String KEY_USER_FULL_NAME = "fullName";
     public static final String KEY_USER_PHONE = "phone";
     public static final String KEY_USER_AVATAR_URL = "avatarUrl";
+    public static final String KEY_USER_POWER = "power";
+    public static final String KEY_USER_POINTS = "points";
 
     private String id;
     private String email;
@@ -25,6 +29,10 @@ public class UserModel {
 
     private CoordsModel coords;
     private Map<String, Boolean> friends = new HashMap<>();
+    private Map<String, Boolean> friendRequests = new HashMap<>();
+    private Map<String, Boolean> challenges = new HashMap<>();
+    private int power = Constants.STARTING_POWER;
+    private int points = 0;
 
     public UserModel() {
         // Default constructor required for calls to DataSnapshot.getValue(UserModel.class)
@@ -50,7 +58,8 @@ public class UserModel {
         result.put(KEY_USER_FULL_NAME, fullName);
         result.put(KEY_USER_PHONE, phone);
         result.put(KEY_USER_AVATAR_URL, avatarUrl);
-
+        result.put(KEY_USER_POWER, power);
+        result.put(KEY_USER_POINTS, points);
         return result;
     }
 
@@ -108,6 +117,38 @@ public class UserModel {
 
     public void setFriends(Map<String, Boolean> friends) {
         this.friends = friends;
+    }
+
+    public Map<String, Boolean> getFriendRequests() {
+        return friendRequests;
+    }
+
+    public void setFriendRequests(Map<String, Boolean> friendRequests) {
+        this.friendRequests = friendRequests;
+    }
+
+    public Map<String, Boolean> getChallenges() {
+        return challenges;
+    }
+
+    public void setChallenges(Map<String, Boolean> challenges) {
+        this.challenges = challenges;
+    }
+
+    public int getPower() {
+        return power;
+    }
+
+    public void setPower(int power) {
+        this.power = power;
+    }
+
+    public int getPoints() {
+        return points;
+    }
+
+    public void setPoints(int points) {
+        this.points = points;
     }
 
     public CoordsModel getCoords() {

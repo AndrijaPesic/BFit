@@ -1,0 +1,15 @@
+<GridView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/fragment_add_challenge_grid"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:verticalSpacing="16dp"
+    android:horizontalSpacing="16dp"
+    android:numColumns="2"
+    android:padding="16dp"
+    android:stretchMode="columnWidth"
+    android:layout_marginTop="50dp"
+    tools:context=".fragments.AddChallengeFragment">
+
+</GridView>

@@ -18,6 +18,17 @@
         android:layout_height="@dimen/fab_size"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@drawable/ic_crown"
-        android:tint="@color/colorPrimaryDark"/>
+        app:srcCompat="@drawable/ic_power"
+        app:backgroundTint="@color/colorFab"/>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/map_fragment_search_button"
+        android:layout_width="@dimen/fab_size"
+        android:layout_height="@dimen/fab_size"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="88dp"
+        android:layout_marginEnd="@dimen/fab_margin"
+        app:srcCompat="@drawable/ic_search"
+        app:backgroundTint="@color/colorFab"/>
+
 </FrameLayout>

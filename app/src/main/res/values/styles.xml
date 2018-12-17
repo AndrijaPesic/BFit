@@ -33,6 +33,16 @@
         <item name="colorButtonNormal">@color/colorPrimary</item>
     </style>
 
+    <style name="PrimaryLightButton" parent="Theme.AppCompat">
+        <item name="colorButtonNormal">@color/colorPrimaryLight</item>
+    </style>
+
+    <style name="AccentButton" parent="Theme.AppCompat">
+        <item name="colorButtonNormal">@color/colorAccent</item>
+        <item name="android:textColor">@color/colorPrimaryDark</item>
+        <item name="android:tint">@color/colorPrimaryDark</item>
+    </style>
+
     <!-- Popup Menu -->
     <style name="PopupMenu" parent="Widget.AppCompat.PopupMenu.Overflow">
         <item name="android:popupBackground">@color/colorPrimaryDark</item>

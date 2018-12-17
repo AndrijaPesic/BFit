@@ -17,9 +17,12 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Map;
 
+import rs.elfak.mosis.akitoske.bfit.models.CardioModel;
 import rs.elfak.mosis.akitoske.bfit.models.CoordsModel;
+import rs.elfak.mosis.akitoske.bfit.models.StrengthModel;
 
 public class FirebaseProvider {
 
@@ -105,10 +108,94 @@ public class FirebaseProvider {
         return mUsersGeoFire;
     }
 
+    public Task<Void> sendFriendRequest(String fromUserId, String toUserId) {
+        return mUsersDbRef.child(toUserId).child("friendRequests").child(fromUserId).setValue(true);
+    }
+
+    public Task<Void> removeFriendRequest(String fromUserId, String toUserId) {
+        return mUsersDbRef.child(toUserId).child("friendRequests").child(fromUserId).removeValue();
+    }
+
+    public Task<Void> addFriendship(String firstUserId, String secondUserId) {
+        Map<String, Object> updates = new HashMap<>();
+        updates.put(getUserFriendRequestPath(firstUserId, secondUserId), null);
+        updates.put(getUserFriendRequestPath(secondUserId, firstUserId), null);
+        updates.put(getUserFriendPath(firstUserId, secondUserId), true);
+        updates.put(getUserFriendPath(secondUserId, firstUserId), true);
+
+        return mUsersDbRef.updateChildren(updates);
+    }
+
+    public Task<Void> removeFriendship(String firstUserId, String secondUserId) {
+        Map<String, Object> updates = new HashMap<>();
+        updates.put(getUserFriendPath(firstUserId, secondUserId), null);
+        updates.put(getUserFriendPath(secondUserId, firstUserId), null);
+
+        return mUsersDbRef.updateChildren(updates);
+    }
+
+    private String getUserFriendPath(String userId, String friendUserId) {
+        return "/" + userId + "/friends/" + friendUserId;
+    }
+
+    private String getUserFriendRequestPath(String fromUserId, String toUserId) {
+        return "/" + toUserId + "/friendRequests/" + fromUserId;
+    }
+
     // ********************************************* CHALLENGES ********************************************* //
 
     public DatabaseReference getChallengeById(String challengeId) {
         return mChallengesDbRef.child(challengeId);
+    }
+
+    public Task<Void> addCardioChallenge(CardioModel cardioChallenge, CoordsModel coords, int newUserPowerValue, int newUserPoints) {
+        String newChallengesKey = mChallengesDbRef.push().getKey();
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("/challenges/" + newChallengesKey, cardioChallenge);
+        updates.put("/users/" + cardioChallenge.getOwnerId() + "/challenges/" + newChallengesKey, true);
+        updates.put("/users/" + cardioChallenge.getOwnerId() + "/power", newUserPowerValue);
+        updates.put("/users/" + cardioChallenge.getOwnerId() + "/points", newUserPoints);
+
+        GeoLocation geoLoc = new GeoLocation(coords.getLatitude(), coords.getLongitude());
+        mChallengesGeoFire.setLocation(newChallengesKey, geoLoc, new
+                GeoFire.CompletionListener(){
+                    @Override
+                    public void onComplete(String key, DatabaseError error) {
+                        if (error != null) {
+                            System.err.println("There was an error saving the location to GeoFire: " + error);
+                        } else {
+                            System.out.println("Location saved on server successfully!");
+                        }
+                    }
+                });
+
+        return mDbRef.updateChildren(updates);
+    }
+
+    public Task<Void> addStrengthChallenge(StrengthModel strengthChallenge, CoordsModel coords, int newUserPowerValue, int newUserPoints) {
+        String newChallengesKey = mChallengesDbRef.push().getKey();
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("/challenges/" + newChallengesKey, strengthChallenge);
+        updates.put("/users/" + strengthChallenge.getOwnerId() + "/challenges/" + newChallengesKey, true);
+        updates.put("/users/" + strengthChallenge.getOwnerId() + "/power", newUserPowerValue);
+        updates.put("/users/" + strengthChallenge.getOwnerId() + "/points", newUserPoints);
+
+        GeoLocation geoLoc = new GeoLocation(coords.getLatitude(), coords.getLongitude());
+        mChallengesGeoFire.setLocation(newChallengesKey, geoLoc, new
+                GeoFire.CompletionListener(){
+                    @Override
+                    public void onComplete(String key, DatabaseError error) {
+                        if (error != null) {
+                            System.err.println("There was an error saving the location to GeoFire: " + error);
+                        } else {
+                            System.out.println("Location saved on server successfully!");
+                        }
+                    }
+                });
+
+        return mDbRef.updateChildren(updates);
     }
 
     public GeoFire getChallengesGeoFire() { return mChallengesGeoFire; }

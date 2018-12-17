@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -15,8 +16,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -51,7 +50,6 @@ import java.util.Map;
 
 import rs.elfak.mosis.akitoske.bfit.Constants;
 import rs.elfak.mosis.akitoske.bfit.R;
-import rs.elfak.mosis.akitoske.bfit.activities.ChallengeActivity;
 import rs.elfak.mosis.akitoske.bfit.activities.MainActivity;
 import rs.elfak.mosis.akitoske.bfit.activities.ProfileActivity;
 import rs.elfak.mosis.akitoske.bfit.models.ChallengeModel;
@@ -67,6 +65,7 @@ public class MapFragment extends BaseFragment implements
     public static final String FRAGMENT_TAG = "MapFragment";
 
     private FloatingActionButton mChallengeButton;
+    private FloatingActionButton mSearchButton;
 
     private Context mContext;
     private FirebaseProvider mFirebaseProvider;
@@ -75,7 +74,7 @@ public class MapFragment extends BaseFragment implements
     private GoogleMap mGoogleMap;
     private MapView mMapView;
     private Circle mCircle;
-    private float mRadius = 500;
+    private float mRadius = 200;
     private Map<String, Marker> mMarkers = new HashMap<>();
     private Map<Marker, GoogleMap.OnMarkerClickListener> mMarkerListeners = new HashMap<>();
     private CoordsModel mMyLocation;
@@ -102,6 +101,7 @@ public class MapFragment extends BaseFragment implements
     private OnFragmentInteractionListener mListener;
 
     public interface OnFragmentInteractionListener {
+        void onOpenChallenge(ChallengeModel challenge);
     }
 
     @Override
@@ -143,6 +143,8 @@ public class MapFragment extends BaseFragment implements
         View inflatedView = inflater.inflate(R.layout.fragment_map, container, false);
 
         mChallengeButton = inflatedView.findViewById(R.id.map_fragment_challenge_button);
+        mSearchButton = inflatedView.findViewById(R.id.map_fragment_search_button);
+
         mMapView = inflatedView.findViewById(R.id.map_fragment_map_view);
         mMapView.onCreate(savedInstanceState);
         mMapView.getMapAsync(this);
@@ -344,11 +346,12 @@ public class MapFragment extends BaseFragment implements
                 mMarkers.put(challenge.getId(), marker);
                 mMarkerListeners.put(marker, mChallengeMarkerListener);
 
+                int iconResourceId = challenge.getType().getIconResId();
                 int iconColorId = R.color.colorPrimaryDark;
                 if (mUser.getUid().equals(challenge.getOwnerId())) {
                     iconColorId = R.color.colorPrimaryLight;
                 }
-                marker.setIcon(getBitmapFromVector(R.drawable.ic_crown, ContextCompat.getColor(mContext, iconColorId)));
+                marker.setIcon(getBitmapFromVector(iconResourceId, ContextCompat.getColor(mContext, iconColorId)));
                 marker.setVisible(true);
             }
 
@@ -370,8 +373,25 @@ public class MapFragment extends BaseFragment implements
     }
 
     private void onChallengeClick() {
-        Intent i = new Intent(getActivity(), ChallengeActivity.class);
-        startActivity(i);
+        getFragmentManager().beginTransaction()
+                .replace(R.id.main_fragment_container, AddChallengeFragment.newInstance(), AddChallengeFragment.FRAGMENT_TAG)
+                .addToBackStack(null)
+                .commit();
+    }
+
+    public boolean canAddOnLocation(Location location) {
+        for (ChallengeModel challenge : mNearbyChallenges.values()) {
+            Location challengeLoc = new Location("dummyprovider");
+            challengeLoc.setLatitude(challenge.getCoords().getLatitude());
+            challengeLoc.setLongitude(challenge.getCoords().getLongitude());
+
+            // We exit if any nearby buildings are too close to this location
+            if (location.distanceTo(challengeLoc) < Constants.MIN_CHALLENGE_DISTANCE) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public void onFilterChanged(int position, UserModel mLoggedUser) {
@@ -409,9 +429,9 @@ public class MapFragment extends BaseFragment implements
 
     private void onChallengeMarkerClick(Marker marker) {
             ChallengeModel challenge = (ChallengeModel) marker.getTag();
-            Intent i = new Intent(getActivity(), ChallengeActivity.class);
-            i.putExtra("challengeId", challenge.getId());
-            startActivity(i);
+            if (mListener != null) {
+                mListener.onOpenChallenge(challenge);
+            }
     }
 
     private void onNewLocation(CoordsModel loc) {

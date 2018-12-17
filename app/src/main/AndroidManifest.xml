@@ -84,11 +84,6 @@
         </receiver>
 
         <activity
-            android:name=".activities.ChallengeActivity"
-            android:label="@string/action_bar_challenge"
-            android:theme="@style/AppTheme" />
-
-        <activity
             android:name=".activities.ProfileActivity"
             android:label="@string/action_bar_profile"
             android:theme="@style/AppTheme" />

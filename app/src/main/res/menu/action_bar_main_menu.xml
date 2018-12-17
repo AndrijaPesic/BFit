@@ -11,6 +11,7 @@
             android:id="@+id/action_friends_item"
             app:showAsAction="ifRoom"
             android:title="@string/action_bar_friends"
+            app:actionLayout="@layout/action_badge_button"
             android:icon="@drawable/ic_group_24dp"/>
 
         <item

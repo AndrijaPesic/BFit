@@ -51,7 +51,7 @@
     <string name="action_bar_leaderboard">Leaderboard</string>
     <string name="action_bar_about">About</string>
     <string name="action_bar_friends">Friends</string>
-    <string name="action_bar_challenge">Challenge</string>
+    <string name="action_bar_challenge">Add Challenge</string>
     <string name="action_bar_logout">Logout</string>
     <string name="action_bar_edit">Edit</string>
     <string name="action_bar_save">Save</string>
@@ -75,6 +75,28 @@
     <string name="pref_background_service_title">Background Service</string>
     <string name="pref_background_service_summary">Tracks your location and notifies you of nearby users when the app
         is not running.</string>
+
+    <!-- ProfileActivity -->
+    <string name="profile_friend_request_button_unfriend">Unfriend</string>
+    <string name="profile_friend_request_button_add">Add friend</string>
+    <string name="profile_friend_request_button_cancel">Cancel request</string>
+    <string name="profile_friend_request_button_accept">Accept request</string>
+
+    <!-- FriendsActivity -->
+    <string name="friend_requests_title">Friend requests</string>
+    <string name="friends_title">Friends</string>
+    <string name="friend_requests_empty">You don\'t have any friend requests right now.</string>
+    <string name="friends_empty">You have not made any friends yet.</string>
+
+    <!-- Friend/FriendRequest item -->
+    <string name="friend_item_accept_text">Accept</string>
+    <string name="friend_item_decline_text">Decline</string>
+
+    <!-- Add Challenge Fragment -->
+    <string name="add_challenge_title">Add Challenge</string>
+
+    <!-- Challenges -->
+    <string name="challenge_no_power_message">You don\'t have enough power.</string>
 
     <!-- AboutActivity -->
     <string name="about_text">BFit is the only fitness app that you\'ll ever need! At this moment it only supports Android devices and it can be used absolutely anywhere to get fit. </string>

@@ -11,6 +11,7 @@ import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.net.Uri;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -31,6 +32,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.support.v7.widget.Toolbar;
+import android.widget.Toast;
 
 
 import com.google.android.gms.common.api.ApiException;
@@ -47,8 +49,17 @@ import com.google.android.gms.tasks.OnSuccessListener;
 
 import rs.elfak.mosis.akitoske.bfit.Constants;
 import rs.elfak.mosis.akitoske.bfit.R;
+import rs.elfak.mosis.akitoske.bfit.fragments.AddChallengeFragment;
+import rs.elfak.mosis.akitoske.bfit.fragments.FriendsFragment;
+import rs.elfak.mosis.akitoske.bfit.fragments.LeaderboardFragment;
 import rs.elfak.mosis.akitoske.bfit.fragments.MapFragment;
 import rs.elfak.mosis.akitoske.bfit.fragments.NoLocationFragment;
+import rs.elfak.mosis.akitoske.bfit.models.CardioModel;
+import rs.elfak.mosis.akitoske.bfit.models.ChallengeModel;
+import rs.elfak.mosis.akitoske.bfit.models.ChallengeType;
+import rs.elfak.mosis.akitoske.bfit.models.CoordsModel;
+import rs.elfak.mosis.akitoske.bfit.models.FriendModel;
+import rs.elfak.mosis.akitoske.bfit.models.StrengthModel;
 import rs.elfak.mosis.akitoske.bfit.models.UserModel;
 import rs.elfak.mosis.akitoske.bfit.providers.FirebaseProvider;
 import rs.elfak.mosis.akitoske.bfit.receivers.LocationProvidersChangedReceiver;
@@ -56,6 +67,10 @@ import rs.elfak.mosis.akitoske.bfit.services.ForegroundLocationService;
 import rs.elfak.mosis.akitoske.bfit.services.UserUpdatesService;
 
 public class MainActivity extends AppCompatActivity implements
+        View.OnClickListener,
+        FriendsFragment.OnListFragmentInteractionListener,
+        LeaderboardFragment.OnListFragmentInteractionListener,
+        AddChallengeFragment.OnFragmentInteractionListener,
         MapFragment.OnFragmentInteractionListener,
         NoLocationFragment.OnFragmentInteractionListener{
 
@@ -76,6 +91,7 @@ public class MainActivity extends AppCompatActivity implements
     private String mLoggedUserId;
     private UserModel mLoggedUser;
 
+    TextView mFriendRequestsCountTv;
     Spinner mFilterSpinner;
 
     private BroadcastReceiver mUserUpdatesReceiver = new BroadcastReceiver() {
@@ -96,7 +112,6 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -164,18 +179,6 @@ public class MainActivity extends AppCompatActivity implements
                     }
                 });
     }
-    private void checkLocationPermission() {
-        final String locationPermission = Manifest.permission.ACCESS_FINE_LOCATION;
-        int userPermission = ContextCompat.checkSelfPermission(this, locationPermission);
-        boolean permissionGranted = userPermission == PackageManager.PERMISSION_GRANTED;
-
-        if (!permissionGranted) {
-            ActivityCompat.requestPermissions(MainActivity.this,
-                    new String[]{locationPermission}, REQUEST_LOCATION_PERMISSION);
-        } else {
-            onLocationPermissionGranted();
-        }
-    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -195,6 +198,16 @@ public class MainActivity extends AppCompatActivity implements
 
     private void onLocationSettingsUnsatisfied() {
         onOpenNoLocationScreen();
+    }
+
+    @Override
+    public void onOpenChallenge(ChallengeModel challenge) {
+        boolean isLoggedUserOwner = challenge.getOwnerId().equals(mLoggedUserId);
+        if (isLoggedUserOwner) {
+            //DO SOMETHING
+        } else {
+            //DO SOMETHING ELSE
+        }
     }
 
     @Override
@@ -296,10 +309,107 @@ public class MainActivity extends AppCompatActivity implements
         checkLocationSettings();
     }
 
+    // This is called when a specific challenge is chosen, not when the AddChallenge FAB is clicked
+    @Override
+    public void onAddChallengeClick(final ChallengeType challengeType) {
+        if (mLoggedUser.getPower() < challengeType.getBaseCost()) {
+            Toast.makeText(this, getString(R.string.challenge_no_power_message), Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Location userLocation = new Location("dummyprovider");
+        userLocation.setLatitude(mLoggedUser.getCoords().getLatitude());
+        userLocation.setLongitude(mLoggedUser.getCoords().getLongitude());
+
+        MapFragment mapFragment = (MapFragment) mFragmentManager.findFragmentByTag(MapFragment.FRAGMENT_TAG);
+        if (mapFragment == null || !mapFragment.canAddOnLocation(userLocation)) {
+            Toast.makeText(this, "Can't build right here.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        FirebaseProvider firebaseProvider = FirebaseProvider.getInstance();
+        // We can use the constantly-updated mLoggedUser to get the location for building
+        addChallenge(challengeType, mLoggedUser.getCoords());
+    }
+
+    private void addChallenge(ChallengeType challengeType, CoordsModel coords) {
+        FirebaseProvider firebaseProvider = FirebaseProvider.getInstance();
+        int newUserPowerValue = mLoggedUser.getPower() - challengeType.getBaseCost();
+        int newUserPoints = mLoggedUser.getPower() + (mLoggedUser.getPower() - newUserPowerValue);
+        switch (challengeType) {
+            case CARDIO:
+                CardioModel newCardioChallenge = new CardioModel(challengeType, mLoggedUserId, coords);
+                firebaseProvider.addCardioChallenge(newCardioChallenge, coords, newUserPowerValue, newUserPoints)
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                mFragmentManager.popBackStack();
+                                Toast.makeText(MainActivity.this, "New Cardio Challenge Added.",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                break;
+            case STRENGTH:
+                StrengthModel newStrengthChallenge= new StrengthModel(challengeType, mLoggedUserId, coords);
+                firebaseProvider.addStrengthChallenge(newStrengthChallenge, coords, newUserPowerValue, newUserPoints)
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                mFragmentManager.popBackStack();
+                                Toast.makeText(MainActivity.this, "New Strength Challenge Added.",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                break;
+        }
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.action_bar_main_menu, menu);
+
+        View friendsItemView = menu.findItem(R.id.action_friends_item).getActionView();
+        // We need to manually set the click listener for our custom options item
+        // because we have used the "actionLayout" parameter in the xml
+        friendsItemView.setOnClickListener(this);
+        mFriendRequestsCountTv = friendsItemView.findViewById(R.id.friend_requests_count_tv);
+        updateFriendRequestsCount();
+
         return super.onCreateOptionsMenu(menu);
+    }
+
+    private void updateFriendRequestsCount() {
+        // Exit if for some reason the UI element is not present
+        if (mFriendRequestsCountTv == null) return;
+
+        if (mLoggedUser == null || mLoggedUser.getFriendRequests().size() == 0) {
+            mFriendRequestsCountTv.setVisibility(View.INVISIBLE);
+        } else {
+            mFriendRequestsCountTv.setText(String.valueOf(mLoggedUser.getFriendRequests().size()));
+            mFriendRequestsCountTv.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.action_friends_item:
+                mFragmentManager
+                        .beginTransaction()
+                        .replace(R.id.main_fragment_container, FriendsFragment.newInstance(), FriendsFragment.FRAGMENT_TAG)
+                        .addToBackStack(null)
+                        .commit();
+        }
+    }
+
+    private void onOpenLeaderboard() {
+        mFragmentManager
+                .beginTransaction()
+                .replace(R.id.main_fragment_container,
+                        LeaderboardFragment.newInstance(mLoggedUserId, mLoggedUser.getFriends()),
+                        LeaderboardFragment.FRAGMENT_TAG)
+                .addToBackStack(null)
+                .commit();
     }
 
     @Override
@@ -309,6 +419,9 @@ public class MainActivity extends AppCompatActivity implements
                 Intent i = new Intent(MainActivity.this,ProfileActivity.class);
                 i.putExtra("userId", mLoggedUserId);
                 startActivity(i);
+                return true;
+            case R.id.action_bar_leaderboard_item:
+                onOpenLeaderboard();
                 return true;
             case R.id.action_bar_settings_item:
                 i = new Intent(MainActivity.this,SettingsActivity.class);
@@ -332,6 +445,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private void onUserDataUpdated() {
         mLoggedUser = mUserUpdatesService.getUser();
+        updateFriendRequestsCount();
     }
 
     private ServiceConnection mUserUpdatesConnection = new ServiceConnection() {
@@ -361,6 +475,65 @@ public class MainActivity extends AppCompatActivity implements
             mUserLocationsBound = false;
         }
     };
+
+
+    private void checkLocationPermission() {
+        final String locationPermission = Manifest.permission.ACCESS_FINE_LOCATION;
+        int userPermission = ContextCompat.checkSelfPermission(this, locationPermission);
+        boolean permissionGranted = userPermission == PackageManager.PERMISSION_GRANTED;
+
+        if (!permissionGranted) {
+            ActivityCompat.requestPermissions(MainActivity.this,
+                    new String[]{locationPermission}, REQUEST_LOCATION_PERMISSION);
+        } else {
+            onLocationPermissionGranted();
+        }
+    }
+
+    @Override
+    public void onFriendItemClick(FriendModel friendItem) {
+        Intent i = new Intent(MainActivity.this,ProfileActivity.class);
+        i.putExtra("userId", friendItem.userId);
+        startActivity(i);
+    }
+
+    @Override
+    public void onLeaderboardItemClick(String userId) {
+        Intent i = new Intent(MainActivity.this,ProfileActivity.class);
+        i.putExtra("userId", userId);
+        startActivity(i);
+    }
+
+    @Override
+    public void onFriendRequestAccept(final FriendModel friend) {
+        FirebaseProvider.getInstance().addFriendship(mLoggedUserId, friend.userId)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        FriendsFragment friendsFragment = (FriendsFragment) mFragmentManager
+                                .findFragmentByTag(FriendsFragment.FRAGMENT_TAG);
+                        if (friendsFragment != null) {
+                            friendsFragment.removeFriendRequest(friend);
+                            friendsFragment.addFriend(friend);
+                        }
+                    }
+                });
+    }
+
+    @Override
+    public void onFriendRequestDecline(final FriendModel fromUser) {
+        FirebaseProvider.getInstance().removeFriendRequest(fromUser.userId, mLoggedUserId)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        FriendsFragment friendsFragment = (FriendsFragment) mFragmentManager
+                                .findFragmentByTag(FriendsFragment.FRAGMENT_TAG);
+                        if (friendsFragment != null) {
+                            friendsFragment.removeFriendRequest(fromUser);
+                        }
+                    }
+                });
+    }
 
 
     @Override
@@ -425,5 +598,6 @@ public class MainActivity extends AppCompatActivity implements
         mFragmentManager = null;
         mLoggedUserId = null;
     }
+
 
 }

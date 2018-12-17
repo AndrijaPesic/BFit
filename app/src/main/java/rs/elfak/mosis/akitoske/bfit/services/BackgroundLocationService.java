@@ -204,7 +204,7 @@ public class BackgroundLocationService extends Service implements
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             UserModel nearbyUser = dataSnapshot.getValue(UserModel.class);
                             NotificationCompat.Builder builder =
-                                    new NotificationCompat.Builder(BackgroundLocationService.this)
+                                    new NotificationCompat.Builder(BackgroundLocationService.this, "BGChId1")
                                             .setSmallIcon(R.drawable.common_google_signin_btn_icon_dark_normal)
                                             .setLargeIcon(BitmapFactory.decodeResource(getResources(),
                                                     R.mipmap.ic_launcher))
