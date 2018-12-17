@@ -5,12 +5,14 @@ public class ChallengeModel {
     protected String id;
     protected String ownerId;
     protected CoordsModel coords;
+    protected ChallengeType type;
 
     public ChallengeModel() {
         //default constructor
     }
 
-    public ChallengeModel(String ownerId, CoordsModel coords){
+    public ChallengeModel(ChallengeType type, String ownerId, CoordsModel coords){
+        this.type = type;
         this.ownerId = ownerId;
         this.coords = coords;
     }
@@ -38,5 +40,10 @@ public class ChallengeModel {
     public void setCoords(CoordsModel coords) {
         this.coords = coords;
     }
+
+    public ChallengeType getType() { return type; }
+
+    public void setType(ChallengeType type) { this.type = type; }
+
 
 }
